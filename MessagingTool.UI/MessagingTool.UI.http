@@ -1,0 +1,6 @@
+@MessagingTool.UI_HostAddress = http://localhost:5147
+
+GET {{MessagingTool.UI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
