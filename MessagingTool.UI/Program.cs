@@ -1,3 +1,9 @@
+using ElmahCore.Mvc;
+using ElmahCore.Sql;
+using System.Reflection;
+using MessagingTool.Repository.Context;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +13,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddElmah<SqlErrorLog>(options =>
+{
+    options.OnPermissionCheck = context => context.User.Identity.IsAuthenticated;
+    //options.Path = "elmahUI";
+    options.ConnectionString = builder.Configuration["ConnectionStrings:MessagingToolDatabase"];
+});
+builder.Services.AddDbContext<MessagingToolDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:MessagingToolDatabase"]);
+});
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+builder.Services.AddMemoryCache();
+builder.Services.AddAutoMapper(typeof(MessagingTool.UI.Program));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -21,5 +40,12 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseElmah();
 
 app.Run();
+
+
+namespace MessagingTool.UI
+{
+    public partial class Program { }
+}
