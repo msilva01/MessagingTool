@@ -1,0 +1,56 @@
+
+
+.mainContainer {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+
+    border-left: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-top: 15px;
+
+    .childrenContainer {        
+        padding:0.4em;        
+    }
+
+    .header {
+        display: flex;
+        flex-direction: row;
+        width: 100% !important;
+
+        .headerBorderBefore {
+            border-top: 1px solid #dee2e6;
+            width: 1em;
+            border-top-left-radius: 5px;
+        }
+
+        .headerTitle {
+          font-family: "Roboto";
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 0.25em;
+            width: fit-content;
+            height: 1em;
+            margin: -.5em 0.5em 0em 0.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: .7rem;
+            font-weight: 400;
+        }
+
+        .headerBorderAfter {
+            border-top: 1px solid #dee2e6;
+            width: 1em;
+            flex-grow: 2;
+            border-top-right-radius: 5px;
+        }
+    }
+
+    .asterisk {
+      color: #db3131,
+    }
+}
