@@ -12,6 +12,7 @@ namespace MessagingTool.UI.Features;
 
 public class UploadCommand : IRequest<FileUploadResult>
 {
+    public int Language { get; set; }
     public IFormFile File { get; set; }
 }
 
@@ -49,7 +50,7 @@ public class UploadCommandHandler(MessagingToolDbContext context) : IRequestHand
         using var csvR = new CsvReader(reader, config);
         var records = csvR.GetRecords<CustomerPhoneNumbersDto>().DistinctBy(x => x.PhoneNumber).Select(s =>
                 new CustomerPhoneNumber()
-                    { PhoneNumber = s.PhoneNumber, DateCreated = DateTime.Now, Active = true, DoNotCall = false })
+                    { PhoneNumber = s.PhoneNumber, DateCreated = DateTime.Now, Active = true, DoNotCall = false, Language = request.Language})
             .ToArray();
         await using (var transaction = await context.Database.BeginTransactionAsync(cancellationToken))
         {
