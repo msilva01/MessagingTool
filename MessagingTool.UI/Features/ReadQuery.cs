@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
 using MessagingTool.Repository.Context;
 using MessagingTool.Repository.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +26,9 @@ public class PhoneNumberWrapper
     public int TotalNumberOfRecords { get; set; }
     public int PageNumber { get; set; }
     public int RowsPerPage { get; set; }
-    public IList<PhoneNumbersDto> Items { get; set; }
+    public PhoneNumbersDto[] Items { get; set; }
 }
-public class PhoneNumbersDto
+public class PhoneNumberSelected
 {
     public int Id { get; set; }
     public string PhoneNumber { get; set; }
@@ -36,13 +37,21 @@ public class PhoneNumbersDto
     public bool Active { get; set; }
 }
 
-public class ReadQUeryHandler(MessagingToolDbContext context) : IRequestHandler<ReadQuery, PhoneNumberWrapper>
+public class PhoneNumbersDto
+{
+    public int Id { get; set; }
+    public string PhoneNumber { get; set; }
+    public string MessageSentOn { get; set; }
+    public bool DoNotCall { get; set; }
+    public bool Active { get; set; }
+}
+public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : IRequestHandler<ReadQuery, PhoneNumberWrapper>
 {
     public async Task<PhoneNumberWrapper> Handle(ReadQuery request, CancellationToken cancellationToken)
     {
         var query = context.Set<CustomerPhoneNumber>()
             .AsNoTracking()
-            .Select(s => new PhoneNumbersDto()
+            .Select(s => new PhoneNumberSelected()
             {
                 Id = s.Id,
                 PhoneNumber = s.PhoneNumber,
@@ -67,7 +76,7 @@ public class ReadQUeryHandler(MessagingToolDbContext context) : IRequestHandler<
         {
             TotalNumberOfRecords = totalCount,
             TotalNumberOfResults = queryResult.Count(),
-            Items = queryResult,
+            Items = mapper.Map<PhoneNumbersDto[]>( queryResult),
             PageNumber = pageNumber,
             RowsPerPage = pageSize,
         };
