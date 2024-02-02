@@ -1,0 +1,117 @@
+@import '../node_modules/react-toastify/dist/ReactToastify.min.css';
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 62.5%;
+  height: 100vh;
+  background: #CDCECA;
+  justify-content: center;
+
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.austin-main-content {
+   background-color: #f6f3ee !important; 
+  /*  background-color: #E7E9E2 !important;  */
+  
+  border-radius: 5px !important;
+  padding: 3px;
+  box-shadow: 0 3px 0 #ddd3c3, 0 1px 5px rgba(209,194,171,1);
+}
+
+label {
+  font-weight: 700 !important;
+}
+
+.label {
+  font-weight: 700;
+}
+thead tr th div, .vertical {
+  writing-mode: vertical-rl;
+  padding: 5px !important;
+  /*transform: rotate(180deg);*/
+}
+
+.modal-header.primary{
+  background-color: #0480be;
+}
+.modal-header.delete{
+  background-color: #BB2D3B;
+}
+
+.modal-header {
+  padding:9px 15px;
+  border-bottom:1px solid #eee;
+
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-top-right-radius: 5px;
+  -moz-border-radius-topleft: 5px;
+  -moz-border-radius-topright: 5px;
+   border-top-left-radius: 5px;
+   border-top-right-radius: 5px;
+   color: white;
+}
+
+p.errorMessage {
+  color: #bf1650;
+}
+
+p.errorMessage::before {
+  display: inline;
+  content: "⚠ ";
+}
+
+input:disabled{
+  background-color: #ddd;
+}
+
+.loginContainer{
+  width: 350px;
+}
+
+button.btn-primary, button.btn-primary:hover {
+  color: #fff;
+  /* width: 100%; */
+  /* font-size: 1.4rem; */
+  background: #1d3557;
+  border: none;
+  padding: 0.4rem 1.2rem;
+/*   border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem 1.2rem;
+  margin-top: 0.5rem;
+ */
+}
+
+button.btn-warning{
+  color: #fff;
+  background: #D38D54;
+  border: none;
+  padding: 0.4rem 1.2rem;
+}
+
+.button100 {
+  width: 100%;
+}
+
+.navBarHeader {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #00438A 70%);
+    color: #fff;
+}
+
+.logSheetContainer {
+  background-color: #ADA9BB;
+}
+
+.MuiToolbar-root  > p {
+  margin-top:15px !important;
+}
