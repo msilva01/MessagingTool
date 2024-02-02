@@ -37,8 +37,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
+//app.UseAuthorization();
+app.UseCors(builder =>
+{
+    builder
+        .SetIsOriginAllowed(_ => true)
+        .SetPreflightMaxAge(TimeSpan.FromMinutes(10))
+        .AllowAnyHeader()
+        .WithExposedHeaders("Exception")
+        .AllowAnyMethod()
+        .AllowCredentials();
+});
 app.MapControllers();
 app.UseElmah();
 
