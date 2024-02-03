@@ -111,6 +111,11 @@ function App() {
                 </Nav>
               </>
             </Navbar.Collapse>
+            <div>
+              <span className="fs-8 float-end mt-3">
+                v.{process.env.REACT_APP_VERSION}
+              </span>
+            </div>
           </Container>
         </Navbar>
         <Routes>
