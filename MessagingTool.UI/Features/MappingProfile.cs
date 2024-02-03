@@ -35,6 +35,6 @@ public class StandardDateFormatter : IValueConverter<DateTime?, string>
 
     public string Convert(DateTime? sourceMember, ResolutionContext context)
     {
-        return sourceMember == null || sourceMember == DateTime.MinValue ? "" : sourceMember.Value.ToShortDateString();
+        return sourceMember == null || sourceMember == DateTime.MinValue ? "" : sourceMember.Value.ToString("g");
     }
 }

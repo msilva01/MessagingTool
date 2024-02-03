@@ -117,7 +117,11 @@ function App() {
           <Route path="/" element={<PhoneUpload></PhoneUpload>}></Route>
           <Route
             path="/SendMessage"
-            element={<SendMessage></SendMessage>}
+            element={<SendMessage doNotCall={false}></SendMessage>}
+          ></Route>
+          <Route
+            path="/DoNotCall"
+            element={<SendMessage doNotCall={true}></SendMessage>}
           ></Route>
         </Routes>
       </ThemeProvider>

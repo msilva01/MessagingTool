@@ -18,6 +18,8 @@ public class ReadQuery : IRequest<PhoneNumberWrapper>
     public string? Field { get; set; }
     public string? FilterOperator { get; set; }
     public string? Value { get; set; }
+    public int Language { get; set; }
+    public bool DoNotCall { get; set; }
 }
 
 public class PhoneNumberWrapper
@@ -33,8 +35,6 @@ public class PhoneNumberSelected
     public int Id { get; set; }
     public string PhoneNumber { get; set; }
     public DateTime? MessageSentOn { get; set; }
-    public bool DoNotCall { get; set; }
-    public bool Active { get; set; }
 }
 
 public class PhoneNumbersDto
@@ -42,8 +42,6 @@ public class PhoneNumbersDto
     public int Id { get; set; }
     public string PhoneNumber { get; set; }
     public string MessageSentOn { get; set; }
-    public bool DoNotCall { get; set; }
-    public bool Active { get; set; }
 }
 public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : IRequestHandler<ReadQuery, PhoneNumberWrapper>
 {
@@ -51,12 +49,11 @@ public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : 
     {
         var query = context.Set<CustomerPhoneNumber>()
             .AsNoTracking()
+            .Where(x => x.Language == request.Language && x.DoNotCall == request.DoNotCall && x.Active == true)
             .Select(s => new PhoneNumberSelected()
             {
                 Id = s.Id,
                 PhoneNumber = s.PhoneNumber,
-                DoNotCall = s.DoNotCall,
-                Active = s.Active,
                 MessageSentOn = s.CustomerMessageLogs
                     .OrderByDescending(o => o.MessageSentOn)
                     .Select(s => s.MessageSentOn)
@@ -66,6 +63,7 @@ public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : 
         var pageSize = request.RowsPerPage ?? 10;
         var pageNumber = request.PageNumber ?? 0;
         var firstPage = pageNumber * pageSize;
+        
         var totalCount = await query.CountAsync(cancellationToken);
         query = query
             .OrderByDescending(o => o.MessageSentOn)
