@@ -16,7 +16,7 @@ namespace MessagingTool.UI.Controllers
             return Ok(response);
         }
         [HttpGet("[action]")]
-        public async Task<IActionResult> Get(int rowsPerPage, int pageNumber, string? sortBy, string? sortOrder,
+        public async Task<IActionResult> Get(int rowsPerPage, int pageNumber, int language, bool doNotCall, string? sortBy, string? sortOrder,
             string? field, string? filterOperator, string? value, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new ReadQuery()
@@ -27,12 +27,28 @@ namespace MessagingTool.UI.Controllers
                     SortOrder = sortOrder,
                     Field = field,
                     FilterOperator = filterOperator,
-                    Value = value
+                    Value = value,
+                    Language = language,
+                    DoNotCall = doNotCall
                 },
                 cancellationToken);
 
 
             return Ok(response);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Post(SendMessageCommand command, CancellationToken cancellationToken)
+        {
+            await mediator.Send(command, cancellationToken);
+            return Ok();
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UpdateDoNotCall(DoNotCallCommand command, CancellationToken cancellationToken)
+        {
+            await mediator.Send(command, cancellationToken);
+            return Ok();
         }
     }
 }

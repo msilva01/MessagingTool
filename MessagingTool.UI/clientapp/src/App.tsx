@@ -111,13 +111,22 @@ function App() {
                 </Nav>
               </>
             </Navbar.Collapse>
+            <div>
+              <span className="fs-8 float-end mt-3">
+                v.{process.env.REACT_APP_VERSION}
+              </span>
+            </div>
           </Container>
         </Navbar>
         <Routes>
           <Route path="/" element={<PhoneUpload></PhoneUpload>}></Route>
           <Route
             path="/SendMessage"
-            element={<SendMessage></SendMessage>}
+            element={<SendMessage doNotCall={false}></SendMessage>}
+          ></Route>
+          <Route
+            path="/DoNotCall"
+            element={<SendMessage doNotCall={true}></SendMessage>}
           ></Route>
         </Routes>
       </ThemeProvider>

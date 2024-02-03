@@ -115,3 +115,7 @@ button.btn-warning{
 .MuiToolbar-root  > p {
   margin-top:15px !important;
 }
+
+.fs-8 {
+  font-size: .6em !important;
+}

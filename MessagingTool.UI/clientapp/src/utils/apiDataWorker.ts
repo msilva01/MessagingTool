@@ -35,3 +35,27 @@ export async function GetAsync<T>(url: string) {
 
   return response;
 }
+
+export async function PostAsync(url: string, postData: {}) {
+  const apiClient = useCreateApiClient();
+  let abortController = new AbortController();
+  const response = await apiClient
+    .post(
+      url,
+      { ...postData },
+      {
+        signal: abortController.signal,
+      }
+    )
+    .catch((err) => {
+      if (err.response?.data?.errors) {
+        Object.keys(err.response?.data?.errors).forEach((itm: string) => {
+          toast.error(err.response?.data?.errors[itm][0]);
+        });
+      }
+
+      return Promise.reject(err);
+    });
+
+  return response;
+}

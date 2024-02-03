@@ -1,28 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
-  Checkbox,
   Container,
   FormControl,
   FormControlLabel,
   FormLabel,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
-  OutlinedInput,
   Paper,
   Select,
-  Stack,
   Switch,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFile,
-  faFloppyDisk,
-  faTrash,
-  faUpload,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFile, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useDropzone, FileWithPath } from "react-dropzone";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,15 +21,8 @@ import { PostFile } from "../../utils/apiDataWorker";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import "./PhoneUpload.css";
-import { v4 } from "uuid";
 import { toast } from "react-toastify";
-import { styled } from "@mui/material/styles";
 import { Col, Row } from "react-bootstrap";
-import { BorderedSection } from "../../utils/Display";
-
-export interface PhoneUploadProps {
-  prop?: string;
-}
 
 interface FileUploadData {
   language: string;
@@ -46,7 +30,7 @@ interface FileUploadData {
   file: any;
 }
 
-export function PhoneUpload({ prop = "default value" }: PhoneUploadProps) {
+export function PhoneUpload() {
   const [selectedFile, setSelectedFile] = useState<FileWithPath | null>(null);
   const schema = yup.object({
     language: yup.string().required("Please select the language"),
@@ -61,7 +45,7 @@ export function PhoneUpload({ prop = "default value" }: PhoneUploadProps) {
     formState: { errors },
   } = useForm<FileUploadData>({
     resolver: yupResolver(schema),
-    defaultValues: { language: "" },
+    defaultValues: { language: "", doNotCall: false },
   });
   const queryClient = useQueryClient();
   const {
@@ -87,9 +71,11 @@ export function PhoneUpload({ prop = "default value" }: PhoneUploadProps) {
       return await PostFile("Home/Upload", {
         File: selectedFile,
         language: data.language,
+        doNotCall: data.doNotCall,
       }).then((r: any) => r.data);
     },
     onSuccess: () => {
+      queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
       clearErrors("file");
       setSelectedFile(null);
       reset({ language: "" });
