@@ -1,4 +1,5 @@
 import {
+  Box,
   Container,
   FormControl,
   InputLabel,
@@ -7,12 +8,14 @@ import {
   Select,
   SelectChangeEvent,
   Stack,
+  TextField,
 } from "@mui/material";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StyledDataGrid } from "../../utils/StyledDataGrid";
 import { Button } from "@mui/material";
 import {
   GridColDef,
+  GridFilterModel,
   GridFooterContainer,
   GridPagination,
   GridPaginationModel,
@@ -27,13 +30,16 @@ import { GetAsync, PostAsync } from "../../utils/apiDataWorker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBan,
+  faCircleXmark,
   faEraser,
+  faSearch,
   faSms,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import { NotificationModal } from "../../utils/NotificationModal";
 import { MessageEdit } from "./MessageEdit";
 import { toast } from "react-toastify";
+import { Form } from "react-bootstrap";
 
 interface ISendMessageProps {
   doNotCall: boolean;
@@ -57,7 +63,6 @@ interface PagedQueryData {
   pageNumber: number;
   rowsPerPage: number;
   field?: string;
-  filterOperator?: string;
   value?: string;
   queryKey?: string;
 }
@@ -71,6 +76,7 @@ interface DoNotCallCommand {
 }
 
 export function SendMessage(props: ISendMessageProps) {
+  const [filterValue, setFilterValue] = useState("");
   const [sendToAll, setSendToAll] = useState(false);
   const [showModal, setShowModal] = useState<messageModalType>({ id: "none" });
   const [language, setLanguage] = useState("1");
@@ -98,6 +104,7 @@ export function SendMessage(props: ISendMessageProps) {
       filterable: false,
     },
   ];
+
   const handlePaginationModelChange = (
     newPaginationModel: GridPaginationModel
   ) => {
@@ -114,10 +121,12 @@ export function SendMessage(props: ISendMessageProps) {
       searchData.rowsPerPage,
       language,
       props.doNotCall,
+      searchData.field,
+      searchData.value,
     ],
     queryFn: async () =>
       await GetAsync<PhoneNumberWrapper>(
-        `/Home/Get?rowsPerPage=${searchData.rowsPerPage}&pageNumber=${searchData.pageNumber}&language=${language}&doNotCall=${props.doNotCall}`
+        `/Home/Get?rowsPerPage=${searchData.rowsPerPage}&pageNumber=${searchData.pageNumber}&language=${language}&doNotCall=${props.doNotCall}&field=${searchData.field}&value=${searchData.value}`
       ).then((res) => res.data),
   });
 
@@ -135,7 +144,6 @@ export function SendMessage(props: ISendMessageProps) {
   });
 
   const onChangeHandler = (ev: SelectChangeEvent) => {
-    console.log(ev.target.value);
     setLanguage(ev.target.value as string);
   };
 
@@ -216,9 +224,6 @@ export function SendMessage(props: ISendMessageProps) {
               </div>
             )}
           </div>
-          <div className="float-end">
-            <GridToolbarQuickFilter />
-          </div>
         </div>
       </GridToolbarContainer>
     );
@@ -281,6 +286,72 @@ export function SendMessage(props: ISendMessageProps) {
                   <MenuItem value="2"> Spanish </MenuItem>
                 </Select>
               </FormControl>
+              <FormControl className="mt-0 ms-2">
+                <TextField
+                  id="search"
+                  type="text"
+                  label="Search Phone Number"
+                  variant="outlined"
+                  margin="none"
+                  onChange={(e) => setFilterValue(e.target.value)}
+                  onKeyUp={(e) => {
+                    if (e.key === "Enter") {
+                      queryClient.resetQueries({
+                        queryKey: ["PhoneNumberGrid"],
+                        exact: false,
+                      });
+                      setSearchData({
+                        ...searchData,
+                        field: "phoneNumber",
+                        value: filterValue,
+                      });
+                    }
+                  }}
+                  value={filterValue}
+                  InputLabelProps={{
+                    required: true,
+                  }}
+                  fullWidth
+                />
+              </FormControl>
+              <Button
+                variant="contained"
+                color="success"
+                size="medium"
+                type="button"
+                className="ms-2"
+                onClick={() => {
+                  queryClient.resetQueries({
+                    queryKey: ["PhoneNumberGrid"],
+                    exact: false,
+                  });
+                  setSearchData({
+                    ...searchData,
+                    field: "phoneNumber",
+                    value: filterValue,
+                  });
+                }}
+              >
+                <FontAwesomeIcon icon={faSearch}></FontAwesomeIcon>&nbsp; Search
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="medium"
+                type="button"
+                className="ms-2"
+                onClick={() => {
+                  setFilterValue("");
+                  setSearchData({
+                    ...searchData,
+                    field: "",
+                    value: "",
+                  });
+                }}
+              >
+                <FontAwesomeIcon icon={faCircleXmark}></FontAwesomeIcon>&nbsp;
+                Clear Search
+              </Button>
             </Stack>
           </div>
           <StyledDataGrid

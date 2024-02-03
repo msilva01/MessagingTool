@@ -60,6 +60,10 @@ public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : 
                     .FirstOrDefault()
             });
 
+        if (!string.IsNullOrEmpty(request.Value) && !string.IsNullOrEmpty(request.Field) && request.Value != "undefined")
+        {
+            query = query.Where(x => x.PhoneNumber.StartsWith(request.Value) || x.PhoneNumber.Contains(request.Value));
+        }
         var pageSize = request.RowsPerPage ?? 10;
         var pageNumber = request.PageNumber ?? 0;
         var firstPage = pageNumber * pageSize;
