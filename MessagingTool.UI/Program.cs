@@ -1,8 +1,8 @@
 using ElmahCore.Mvc;
 using ElmahCore.Sql;
-using System.Reflection;
 using MessagingTool.Repository.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +26,8 @@ builder.Services.AddDbContext<MessagingToolDbContext>(options =>
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddMemoryCache();
 builder.Services.AddAutoMapper(typeof(MessagingTool.UI.Program));
+builder.Services.AddSpaStaticFiles(conf => { conf.RootPath = "clientApp/build"; });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -50,7 +52,10 @@ app.UseCors(builder =>
 });
 app.MapControllers();
 app.UseElmah();
-
+app.UseSpa(spa =>
+{
+    spa.Options.SourcePath = "clientApp";
+});
 app.Run();
 
 
