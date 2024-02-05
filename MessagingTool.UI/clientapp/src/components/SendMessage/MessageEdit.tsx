@@ -45,9 +45,15 @@ export function MessageEdit(props: MessageEditProps) {
   const { mutate } = useMutation({
     mutationFn: async (data: SMSMessageData) =>
       await PostAsync("Home/Post", data),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
-      toast.success(`Messages Sent`);
+      if (!res.data) {
+        toast.error(
+          "One or more phone numbers were moved to the Do Not Call List"
+        );
+      } else {
+        toast.success(`Messages Sent`);
+      }
       reset({ text: "" });
       props.onHide();
     },

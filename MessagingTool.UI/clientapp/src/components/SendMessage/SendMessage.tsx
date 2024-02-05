@@ -133,7 +133,7 @@ export function SendMessage(props: ISendMessageProps) {
   const { mutate } = useMutation({
     mutationFn: async (data: DoNotCallCommand) =>
       await PostAsync("Home/UpdateDoNotCall", data),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       toast.success(`Selected Records were moved`);
       setShowModal({ id: "none" });
       queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });

@@ -24,17 +24,17 @@ namespace MessagingTool.UI.Controllers
             string? field, string? filterOperator, string? value, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new ReadQuery()
-                {
-                    RowsPerPage = rowsPerPage,
-                    PageNumber = pageNumber,
-                    SortBy = sortBy,
-                    SortOrder = sortOrder,
-                    Field = field,
-                    FilterOperator = filterOperator,
-                    Value = value,
-                    Language = language,
-                    DoNotCall = doNotCall
-                },
+            {
+                RowsPerPage = rowsPerPage,
+                PageNumber = pageNumber,
+                SortBy = sortBy,
+                SortOrder = sortOrder,
+                Field = field,
+                FilterOperator = filterOperator,
+                Value = value,
+                Language = language,
+                DoNotCall = doNotCall
+            },
                 cancellationToken);
 
 
@@ -44,8 +44,8 @@ namespace MessagingTool.UI.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Post(SendMessageCommand command, CancellationToken cancellationToken)
         {
-            await mediator.Send(command, cancellationToken);
-            return Ok();
+            var result = await mediator.Send(command, cancellationToken);
+            return Ok(result);
         }
 
         [HttpPost("[action]")]

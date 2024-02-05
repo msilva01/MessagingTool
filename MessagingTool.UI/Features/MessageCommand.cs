@@ -8,7 +8,7 @@ using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
 namespace MessagingTool.UI.Features;
-public class SendMessageCommand : IRequest
+public class SendMessageCommand : IRequest<bool>
 {
     public bool SendToAll { get; set; }
     public string Language { get; set; }
@@ -17,10 +17,11 @@ public class SendMessageCommand : IRequest
 }
 
 
-public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbContext context) : IRequestHandler<SendMessageCommand>
+public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbContext context) : IRequestHandler<SendMessageCommand, bool>
 {
-    public async Task Handle(SendMessageCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(SendMessageCommand request, CancellationToken cancellationToken)
     {
+        var result = true;
 
         if (!request.SendToAll)
         {
@@ -38,7 +39,7 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
 
             foreach (var cp in customerPhoneNumbers)
             {
-                await SendMessageAsync(request.text, cp.PhoneNumber);
+                result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, cancellationToken);
             }
 
             var messageLogs = request.phoneNumberIds.Select(s => new CustomerMessageLog()
@@ -59,7 +60,7 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
                 var phoneNumbers = await query.Skip(currentCount).Take(1000).ToArrayAsync(cancellationToken);
                 foreach (var cp in phoneNumbers)
                 {
-                    await SendMessageAsync(request.text, cp.PhoneNumber);
+                    result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, cancellationToken);
                 }
 
                 var messageLogs = phoneNumbers.Select(s => new CustomerMessageLog()
@@ -70,6 +71,7 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
             }
         }
 
+        return result;
     }
 
     private async Task CreateMessageLogAsync(IList<CustomerMessageLog> messageLogs, CancellationToken cancellationToken)
@@ -84,15 +86,42 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
     }
     //******secrets storage
     //https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=linux
-    private async Task SendMessageAsync(string text, string phoneNumber)
+    private async Task<bool> SendMessageAsync(string text, string phoneNumber, int id, CancellationToken cancellationToken)
     {
         var sid = config["ConnectionStrings:Twilio:Sid"];
         var token = config["ConnectionStrings:Twilio:Token"];
         var ameritaxPhoneNumber = config["ConnectionStrings:Twilio:PhoneNumber"];
 
         TwilioClient.Init(sid, token);
+        var result = true;
+        try
+        {
+            await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
+                to: new PhoneNumber(phoneNumber));
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message == "Attempt to send to unsubscribed recipient")
+            {
+                result = false;
+                var customerPhone = await context
+                    .FindAsync<CustomerPhoneNumber>(id, cancellationToken);
+                if (customerPhone == null)
+                {
+                    throw new KeyNotFoundException($"Invalid Id {id}");
+                }
+                customerPhone.DoNotCall = true;
+                await context.SaveChangesAsync(cancellationToken);
 
-        await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
-            to: new PhoneNumber(phoneNumber));
+            }
+            else
+            {
+                throw ex;
+            }
+
+        }
+
+        return result;
+
     }
 }
