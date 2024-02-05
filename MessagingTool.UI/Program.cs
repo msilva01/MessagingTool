@@ -1,16 +1,23 @@
 using ElmahCore.Mvc;
 using ElmahCore.Sql;
-using System.Reflection;
 using MessagingTool.Repository.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowCORS",
+        policy =>
+        {
+            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        });
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddElmah<SqlErrorLog>(options =>
@@ -26,31 +33,27 @@ builder.Services.AddDbContext<MessagingToolDbContext>(options =>
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddMemoryCache();
 builder.Services.AddAutoMapper(typeof(MessagingTool.UI.Program));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseStaticFiles();
+app.UseRouting();
 
-//app.UseAuthorization();
-app.UseCors(builder =>
-{
-    builder
-        .SetIsOriginAllowed(_ => true)
-        .SetPreflightMaxAge(TimeSpan.FromMinutes(10))
-        .AllowAnyHeader()
-        .WithExposedHeaders("Exception")
-        .AllowAnyMethod()
-        .AllowCredentials();
-});
+app.UseCors(x => x
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
+
+//app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.UseElmah();
-
 app.Run();
 
 

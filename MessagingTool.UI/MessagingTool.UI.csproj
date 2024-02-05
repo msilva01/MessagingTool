@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+	<TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	<SpaRoot>clientApp\</SpaRoot>
@@ -10,9 +12,15 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzers>false</RunAnalyzers>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <AnalysisLevel>none</AnalysisLevel>	
-    <UserSecretsId>d049d240-e6c5-4c43-9136-cae6a7665841</UserSecretsId>
+    <AnalysisLevel>none</AnalysisLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="clientapp\**" />
+    <Content Remove="clientapp\**" />
+    <EmbeddedResource Remove="clientapp\**" />
+    <None Remove="clientapp\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />

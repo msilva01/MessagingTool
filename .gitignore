@@ -262,3 +262,6 @@ __pycache__/
 *.pyc
 /PoaTracking/PoaTracking/AttachedDocuments
 /LogSheetApi/clientapp/build.zip
+/MessagingTool.UI/clientapp/build
+/MessagingTool.UI/Properties/PublishProfiles
+*.zip
