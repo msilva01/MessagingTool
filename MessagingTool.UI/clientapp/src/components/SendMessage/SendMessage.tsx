@@ -270,22 +270,26 @@ export function SendMessage(props: ISendMessageProps) {
               <h2 className="me-4">
                 {props.doNotCall ? "Do Not Call List" : "Send Text "}
               </h2>
-              <FormControl style={{ width: 200 }} className="ms-4">
-                <InputLabel id="demo-simple-select-label">language</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  label="Language"
-                  onChange={onChangeHandler}
-                  value={language}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value="1"> English </MenuItem>
-                  <MenuItem value="2"> Spanish </MenuItem>
-                </Select>
-              </FormControl>
+              {!props.doNotCall && (
+                <FormControl style={{ width: 200 }} className="ms-4">
+                  <InputLabel id="demo-simple-select-label">
+                    language
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="Language"
+                    onChange={onChangeHandler}
+                    value={language}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    <MenuItem value="1"> English </MenuItem>
+                    <MenuItem value="2"> Spanish </MenuItem>
+                  </Select>
+                </FormControl>
+              )}
               <FormControl className="mt-0 ms-2">
                 <TextField
                   id="search"
