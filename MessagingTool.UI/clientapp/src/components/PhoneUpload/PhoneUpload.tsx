@@ -13,16 +13,17 @@ import {
   Switch,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faEraser, faFile, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useDropzone, FileWithPath } from "react-dropzone";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { PostFile } from "../../utils/apiDataWorker";
+import { DeleteAsync, PostFile } from "../../utils/apiDataWorker";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import "./PhoneUpload.css";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
+import { NotificationModal } from "../../utils/NotificationModal";
 
 interface FileUploadData {
   language: string;
@@ -31,6 +32,7 @@ interface FileUploadData {
 }
 
 export function PhoneUpload() {
+  const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileWithPath | null>(null);
   const schema = yup.object({
     language: yup.string().required("Please select the language"),
@@ -66,6 +68,23 @@ export function PhoneUpload() {
     setSelectedFile(acceptedFiles[0]);
   }, [acceptedFiles]);
 
+const {mutate:deleteMutation} = useMutation({
+  mutationFn: async () => await DeleteAsync("Home/Delete"),
+  onSuccess: () => {
+  queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
+  clearErrors("file");
+  setSelectedFile(null);
+  setShowModal(false);
+  
+  toast.success("All data successfuly deleted");
+},
+onError: (err: any) => {
+  console.log(err);
+  toast.error(err.response?.data.message || err);
+},
+});
+
+
   const { mutate: mutate } = useMutation({
     mutationFn: async (data: FileUploadData) => {
       return await PostFile("Home/Upload", {
@@ -93,6 +112,15 @@ export function PhoneUpload() {
 
   return (
     <Container maxWidth="md" className=" p-3 mt-5">
+      <NotificationModal
+          show={showModal}
+          headerTitle="Delete all Data"
+          bodyMessage=
+               "Are you sure you want to delete all phone numbers ? This action cannot be reversed"
+          onHide={() => setShowModal(false)}
+          updateData={() => deleteMutation()}
+          headerColor="delete"
+        />
       <Paper
         elevation={8}
         className="mt-2 p-4"
@@ -201,11 +229,24 @@ export function PhoneUpload() {
           </Row>
 
           <Row className="justify-content-md-end">
+            <Col xs lg="auto">
+            <Button
+                variant="contained"
+                color="error"
+                type="button"
+                size="large"
+                onClick={() => setShowModal(true)}
+               >
+                <FontAwesomeIcon icon={faEraser}></FontAwesomeIcon>
+                &nbsp;Delete All Data
+              </Button>
+            </Col>
             <Col xs lg="2">
               <Button
                 variant="contained"
                 color="primary"
                 type="submit"
+                size="large"
                 disabled={selectedFile == null}
               >
                 <FontAwesomeIcon icon={faUpload}></FontAwesomeIcon>

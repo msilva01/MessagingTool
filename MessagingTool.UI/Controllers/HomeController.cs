@@ -17,22 +17,24 @@ namespace MessagingTool.UI.Controllers
             var response = await mediator.Send(request, cancellationToken);
             return Ok(response);
         }
+
         [HttpGet("[action]")]
-        public async Task<IActionResult> Get(int rowsPerPage, int pageNumber, int language, bool doNotCall, string? sortBy, string? sortOrder,
+        public async Task<IActionResult> Get(int rowsPerPage, int pageNumber, int language, bool doNotCall,
+            string? sortBy, string? sortOrder,
             string? field, string? filterOperator, string? value, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new ReadQuery()
-            {
-                RowsPerPage = rowsPerPage,
-                PageNumber = pageNumber,
-                SortBy = sortBy,
-                SortOrder = sortOrder,
-                Field = field,
-                FilterOperator = filterOperator,
-                Value = value,
-                Language = language,
-                DoNotCall = doNotCall
-            },
+                {
+                    RowsPerPage = rowsPerPage,
+                    PageNumber = pageNumber,
+                    SortBy = sortBy,
+                    SortOrder = sortOrder,
+                    Field = field,
+                    FilterOperator = filterOperator,
+                    Value = value,
+                    Language = language,
+                    DoNotCall = doNotCall
+                },
                 cancellationToken);
 
 
@@ -50,6 +52,13 @@ namespace MessagingTool.UI.Controllers
         public async Task<IActionResult> UpdateDoNotCall(DoNotCallCommand command, CancellationToken cancellationToken)
         {
             await mediator.Send(command, cancellationToken);
+            return Ok();
+        }
+
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> Delete(CancellationToken cancellationToken)
+        {
+            await mediator.Send(new DeleteCommand());
             return Ok();
         }
     }
