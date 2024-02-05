@@ -12,15 +12,14 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzers>false</RunAnalyzers>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <AnalysisLevel>none</AnalysisLevel>	
-    <UserSecretsId>d049d240-e6c5-4c43-9136-cae6a7665841</UserSecretsId>
+    <AnalysisLevel>none</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="clientapp\build\**" />
-    <Content Remove="clientapp\build\**" />
-    <EmbeddedResource Remove="clientapp\build\**" />
-    <None Remove="clientapp\build\**" />
+    <Compile Remove="clientapp\**" />
+    <Content Remove="clientapp\**" />
+    <EmbeddedResource Remove="clientapp\**" />
+    <None Remove="clientapp\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,8 +30,6 @@
     <PackageReference Include="ElmahCore" Version="2.1.2" />
     <PackageReference Include="ElmahCore.Sql" Version="2.1.2" />
     <PackageReference Include="MediatR" Version="12.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.1.32" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
       <PrivateAssets>all</PrivateAssets>

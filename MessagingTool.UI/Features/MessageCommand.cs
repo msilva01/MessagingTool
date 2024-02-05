@@ -13,11 +13,11 @@ public class SendMessageCommand : IRequest
     public bool SendToAll { get; set; }
     public string Language { get; set; }
     public string text { get; set; }
-    public string[]? phoneNumberIds{ get; set; }
+    public string[]? phoneNumberIds { get; set; }
 }
 
 
-public class SendMessageCommandHandler(IConfiguration config,MessagingToolDbContext context) : IRequestHandler<SendMessageCommand>
+public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbContext context) : IRequestHandler<SendMessageCommand>
 {
     public async Task Handle(SendMessageCommand request, CancellationToken cancellationToken)
     {
@@ -42,7 +42,7 @@ public class SendMessageCommandHandler(IConfiguration config,MessagingToolDbCont
             }
 
             var messageLogs = request.phoneNumberIds.Select(s => new CustomerMessageLog()
-                { CustomerPhoneNumberId = Int32.Parse(s), MessageSentOn = DateTime.Now }).ToList();
+            { CustomerPhoneNumberId = Int32.Parse(s), MessageSentOn = DateTime.Now }).ToList();
             await CreateMessageLogAsync(messageLogs, cancellationToken);
         }
         else
@@ -50,7 +50,7 @@ public class SendMessageCommandHandler(IConfiguration config,MessagingToolDbCont
             var query = context.Set<CustomerPhoneNumber>()
                 .AsNoTracking()
                 .Where(x => x.Language == int.Parse(request.Language) && x.DoNotCall == false && x.Active == true)
-                .Select(s =>  new {PhoneNumber = s.PhoneNumber, Id = s.Id});
+                .Select(s => new { PhoneNumber = s.PhoneNumber, Id = s.Id });
 
             var totalCount = await query.CountAsync(cancellationToken);
             var currentCount = 0;
@@ -63,13 +63,13 @@ public class SendMessageCommandHandler(IConfiguration config,MessagingToolDbCont
                 }
 
                 var messageLogs = phoneNumbers.Select(s => new CustomerMessageLog()
-                    { CustomerPhoneNumberId = s.Id, MessageSentOn = DateTime.Now }).ToList();
+                { CustomerPhoneNumberId = s.Id, MessageSentOn = DateTime.Now }).ToList();
                 await CreateMessageLogAsync(messageLogs, cancellationToken);
 
                 currentCount += 1000;
             }
         }
-        
+
     }
 
     private async Task CreateMessageLogAsync(IList<CustomerMessageLog> messageLogs, CancellationToken cancellationToken)
@@ -82,17 +82,17 @@ public class SendMessageCommandHandler(IConfiguration config,MessagingToolDbCont
 
         await context.BulkInsertAsync(messageLogs, bulkMessageLogConfig, cancellationToken: cancellationToken);
     }
-//******secrets storage
-//https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=linux
+    //******secrets storage
+    //https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=linux
     private async Task SendMessageAsync(string text, string phoneNumber)
     {
         var sid = config["ConnectionStrings:Twilio:Sid"];
         var token = config["ConnectionStrings:Twilio:Token"];
         var ameritaxPhoneNumber = config["ConnectionStrings:Twilio:PhoneNumber"];
-        
-        //TwilioClient.Init(sid, token);
 
-        // await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
-        //     to: new PhoneNumber(phoneNumber));
+        TwilioClient.Init(sid, token);
+
+        await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
+            to: new PhoneNumber(phoneNumber));
     }
 }

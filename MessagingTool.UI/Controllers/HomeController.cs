@@ -1,11 +1,13 @@
 ﻿using MediatR;
 using MessagingTool.UI.Features;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MessagingTool.UI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableCors("AllowCORS")]
     public class HomeController(IMediator mediator) : ControllerBase
     {
         [HttpPost("[action]")]
@@ -20,17 +22,17 @@ namespace MessagingTool.UI.Controllers
             string? field, string? filterOperator, string? value, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new ReadQuery()
-                {
-                    RowsPerPage = rowsPerPage,
-                    PageNumber = pageNumber,
-                    SortBy = sortBy,
-                    SortOrder = sortOrder,
-                    Field = field,
-                    FilterOperator = filterOperator,
-                    Value = value,
-                    Language = language,
-                    DoNotCall = doNotCall
-                },
+            {
+                RowsPerPage = rowsPerPage,
+                PageNumber = pageNumber,
+                SortBy = sortBy,
+                SortOrder = sortOrder,
+                Field = field,
+                FilterOperator = filterOperator,
+                Value = value,
+                Language = language,
+                DoNotCall = doNotCall
+            },
                 cancellationToken);
 
 
