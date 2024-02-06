@@ -10,12 +10,12 @@ public class DeleteCommand : IRequest
 }
 
 
-public  class DeleteCommandHandler(MessagingToolDbContext context): IRequestHandler<DeleteCommand>
+public class DeleteCommandHandler(MessagingToolDbContext context) : IRequestHandler<DeleteCommand>
 {
-    
+
     public async Task Handle(DeleteCommand request, CancellationToken cancellationToken)
     {
-        var messagelogCount =await context.Set<CustomerMessageLog>().ExecuteDeleteAsync(cancellationToken);
-        var nmbersCount = await context.Set<CustomerPhoneNumber>().ExecuteDeleteAsync(cancellationToken);
+        await context.Set<CustomerMessageLog>().ExecuteDeleteAsync(cancellationToken);
+        await context.Set<CustomerPhoneNumber>().ExecuteDeleteAsync(cancellationToken);
     }
 }

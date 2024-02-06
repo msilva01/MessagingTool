@@ -8,7 +8,7 @@ namespace MessagingTool.UI.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [EnableCors("AllowCORS")]
-    public class HomeController(IMediator mediator) : ControllerBase
+    public class HomeController(IMediator mediator, ILogger<HomeController> logger) : ControllerBase
     {
         [HttpPost("[action]")]
         [DisableRequestSizeLimit]
@@ -23,6 +23,7 @@ namespace MessagingTool.UI.Controllers
             string? sortBy, string? sortOrder,
             string? field, string? filterOperator, string? value, CancellationToken cancellationToken)
         {
+
             var response = await mediator.Send(new ReadQuery()
             {
                 RowsPerPage = rowsPerPage,
@@ -44,6 +45,7 @@ namespace MessagingTool.UI.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Post(SendMessageCommand command, CancellationToken cancellationToken)
         {
+            logger.LogInformation($"Sending Messages send to all {command.SendToAll} - {command.phoneNumberIds.Length}");
             var result = await mediator.Send(command, cancellationToken);
             return Ok(result);
         }
@@ -58,7 +60,7 @@ namespace MessagingTool.UI.Controllers
         [HttpDelete("[action]")]
         public async Task<IActionResult> Delete(CancellationToken cancellationToken)
         {
-            await mediator.Send(new DeleteCommand());
+            await mediator.Send(new DeleteCommand(), cancellationToken);
             return Ok();
         }
     }
