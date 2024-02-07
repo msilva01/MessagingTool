@@ -58,9 +58,9 @@ namespace MessagingTool.UI.Controllers
         }
 
         [HttpDelete("[action]")]
-        public async Task<IActionResult> Delete(CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete([FromQuery] DeleteCommand command, CancellationToken cancellationToken)
         {
-            await mediator.Send(new DeleteCommand(), cancellationToken);
+            await mediator.Send(command, cancellationToken);
             return Ok();
         }
     }

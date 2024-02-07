@@ -28,7 +28,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import "./PhoneUpload.css";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
-import { NotificationModal } from "../../utils/NotificationModal";
+import { DeletePhone } from "./DeletePhone";
 
 interface FileUploadData {
   language: string;
@@ -80,22 +80,6 @@ export function PhoneUpload() {
     setSelectedFile(acceptedFiles[0]);
   }, [acceptedFiles]);
 
-  const { mutate: deleteMutation } = useMutation({
-    mutationFn: async () => await DeleteAsync("Home/Delete"),
-    onSuccess: () => {
-      queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
-      clearErrors("file");
-      setSelectedFile(null);
-      setShowModal(false);
-
-      toast.success("All data successfuly deleted");
-    },
-    onError: (err: any) => {
-      console.log(err);
-      toast.error(err.response?.data.message || err);
-    },
-  });
-
   const { mutate: mutate } = useMutation({
     mutationFn: async (data: FileUploadData) => {
       return await PostFile("Home/Upload", {
@@ -135,14 +119,7 @@ export function PhoneUpload() {
 
   return (
     <Container maxWidth="md" className=" p-3 mt-5">
-      <NotificationModal
-        show={showModal}
-        headerTitle="Delete all Data"
-        bodyMessage="Are you sure you want to delete all phone numbers ? This action cannot be reversed"
-        onHide={() => setShowModal(false)}
-        updateData={() => deleteMutation()}
-        headerColor="delete"
-      />
+      <DeletePhone show={showModal} onHide={() => setShowModal(false)} />
       <Paper
         elevation={8}
         className="mt-2 p-4"

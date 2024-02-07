@@ -13,6 +13,7 @@
     <RunAnalyzers>false</RunAnalyzers>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <AnalysisLevel>none</AnalysisLevel>
+    <UserSecretsId>67c7d8f2-2b28-48fa-bc00-1645f0ea8e48</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
