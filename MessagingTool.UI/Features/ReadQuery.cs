@@ -35,6 +35,7 @@ public class PhoneNumberSelected
     public int Id { get; set; }
     public string PhoneNumber { get; set; }
     public DateTime? MessageSentOn { get; set; }
+    public int Language { get; set; }
 }
 
 public class PhoneNumbersDto
@@ -42,6 +43,7 @@ public class PhoneNumbersDto
     public int Id { get; set; }
     public string PhoneNumber { get; set; }
     public string MessageSentOn { get; set; }
+    
 }
 public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : IRequestHandler<ReadQuery, PhoneNumberWrapper>
 {
@@ -49,17 +51,23 @@ public class ReadQUeryHandler(MessagingToolDbContext context, IMapper mapper) : 
     {
         var query = context.Set<CustomerPhoneNumber>()
             .AsNoTracking()
-            .Where(x => x.Language == request.Language && x.DoNotCall == request.DoNotCall && x.Active == true)
+            .Where(x => x.DoNotCall == request.DoNotCall && x.Active == true)
             .Select(s => new PhoneNumberSelected()
             {
                 Id = s.Id,
                 PhoneNumber = s.PhoneNumber,
+                Language = s.Language,
                 MessageSentOn = s.CustomerMessageLogs
                     .OrderByDescending(o => o.MessageSentOn)
                     .Select(s => s.MessageSentOn)
                     .FirstOrDefault()
             });
 
+        //02/05/2024 - Do Not call doesn't check for language
+        if (!request.DoNotCall)
+        {
+            query = query.Where(x => x.Language == request.Language);
+        }
         if (!string.IsNullOrEmpty(request.Value) && !string.IsNullOrEmpty(request.Field) && request.Value != "undefined")
         {
             query = query.Where(x => x.PhoneNumber.StartsWith(request.Value) || x.PhoneNumber.Contains(request.Value));

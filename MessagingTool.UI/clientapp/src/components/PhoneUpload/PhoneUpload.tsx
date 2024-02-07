@@ -13,9 +13,14 @@ import {
   Switch,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEraser, faFile, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEraser,
+  faFile,
+  faTrash,
+  faUpload,
+} from "@fortawesome/free-solid-svg-icons";
 import { useDropzone, FileWithPath } from "react-dropzone";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DeleteAsync, PostFile } from "../../utils/apiDataWorker";
 import * as yup from "yup";
@@ -23,7 +28,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import "./PhoneUpload.css";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
-import { NotificationModal } from "../../utils/NotificationModal";
+import { DeletePhone } from "./DeletePhone";
 
 interface FileUploadData {
   language: string;
@@ -35,7 +40,14 @@ export function PhoneUpload() {
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileWithPath | null>(null);
   const schema = yup.object({
-    language: yup.string().required("Please select the language"),
+    language: yup
+      .string()
+      .nullable()
+      .when("doNotCall", {
+        is: (val: boolean) => val,
+        then: yup.string().notRequired(),
+        otherwise: yup.string().required("Please select the language"),
+      }),
   });
   const {
     register,
@@ -68,28 +80,11 @@ export function PhoneUpload() {
     setSelectedFile(acceptedFiles[0]);
   }, [acceptedFiles]);
 
-const {mutate:deleteMutation} = useMutation({
-  mutationFn: async () => await DeleteAsync("Home/Delete"),
-  onSuccess: () => {
-  queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
-  clearErrors("file");
-  setSelectedFile(null);
-  setShowModal(false);
-  
-  toast.success("All data successfuly deleted");
-},
-onError: (err: any) => {
-  console.log(err);
-  toast.error(err.response?.data.message || err);
-},
-});
-
-
   const { mutate: mutate } = useMutation({
     mutationFn: async (data: FileUploadData) => {
       return await PostFile("Home/Upload", {
         File: selectedFile,
-        language: data.language,
+        language: data.doNotCall ? "1" : data.language,
         doNotCall: data.doNotCall,
       }).then((r: any) => r.data);
     },
@@ -110,17 +105,21 @@ onError: (err: any) => {
     mutate(data);
   }
 
+  const doNotCallWatch = useWatch({
+    control,
+    name: "doNotCall",
+    defaultValue: false,
+  });
+
+  useEffect(() => {
+    if (doNotCallWatch) {
+      clearErrors("language");
+    }
+  }, [doNotCallWatch]);
+
   return (
     <Container maxWidth="md" className=" p-3 mt-5">
-      <NotificationModal
-          show={showModal}
-          headerTitle="Delete all Data"
-          bodyMessage=
-               "Are you sure you want to delete all phone numbers ? This action cannot be reversed"
-          onHide={() => setShowModal(false)}
-          updateData={() => deleteMutation()}
-          headerColor="delete"
-        />
+      <DeletePhone show={showModal} onHide={() => setShowModal(false)} />
       <Paper
         elevation={8}
         className="mt-2 p-4"
@@ -130,38 +129,6 @@ onError: (err: any) => {
         <hr></hr>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Row>
-            <Col md={6}>
-              <Controller
-                control={control}
-                name="language"
-                render={({ field: { onChange, name, value } }) => (
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      language
-                    </InputLabel>
-                    <Select
-                      {...register("language")}
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label="Language"
-                      onChange={onChange}
-                      value={value}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="1"> English </MenuItem>
-                      <MenuItem value="2"> Spanish </MenuItem>
-                    </Select>
-                    {errors?.language && (
-                      <p className="errorMessage">
-                        {errors?.language?.message?.toString()}
-                      </p>
-                    )}
-                  </FormControl>
-                )}
-              />
-            </Col>
             <Col>
               <Controller
                 control={control}
@@ -181,6 +148,39 @@ onError: (err: any) => {
                         />
                       }
                     />
+                  </FormControl>
+                )}
+              />
+            </Col>
+            <Col md={6}>
+              <Controller
+                control={control}
+                name="language"
+                render={({ field: { onChange, name, value } }) => (
+                  <FormControl fullWidth>
+                    <InputLabel id="demo-simple-select-label">
+                      language
+                    </InputLabel>
+                    <Select
+                      {...register("language")}
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="Language"
+                      onChange={onChange}
+                      disabled={doNotCallWatch}
+                      value={value}
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value="1"> English </MenuItem>
+                      <MenuItem value="2"> Spanish </MenuItem>
+                    </Select>
+                    {errors?.language && (
+                      <p className="errorMessage">
+                        {errors?.language?.message?.toString()}
+                      </p>
+                    )}
                   </FormControl>
                 )}
               />
@@ -230,13 +230,13 @@ onError: (err: any) => {
 
           <Row className="justify-content-md-end">
             <Col xs lg="auto">
-            <Button
+              <Button
                 variant="contained"
                 color="error"
                 type="button"
                 size="large"
                 onClick={() => setShowModal(true)}
-               >
+              >
                 <FontAwesomeIcon icon={faEraser}></FontAwesomeIcon>
                 &nbsp;Delete All Data
               </Button>

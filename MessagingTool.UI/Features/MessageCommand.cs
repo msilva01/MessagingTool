@@ -17,10 +17,12 @@ public class SendMessageCommand : IRequest<bool>
 }
 
 
-public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbContext context) : IRequestHandler<SendMessageCommand, bool>
+public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbContext context, ILogger<SendMessageCommandHandler> logger) : IRequestHandler<SendMessageCommand, bool>
 {
     public async Task<bool> Handle(SendMessageCommand request, CancellationToken cancellationToken)
     {
+        logger.LogDebug($"Sending Messages handler {request.SendToAll} {request.phoneNumberIds.Length}");
+
         var result = true;
 
         if (!request.SendToAll)
@@ -39,7 +41,7 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
 
             foreach (var cp in customerPhoneNumbers)
             {
-                result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, cancellationToken);
+                result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
             }
 
             var messageLogs = request.phoneNumberIds.Select(s => new CustomerMessageLog()
@@ -60,7 +62,7 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
                 var phoneNumbers = await query.Skip(currentCount).Take(1000).ToArrayAsync(cancellationToken);
                 foreach (var cp in phoneNumbers)
                 {
-                    result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, cancellationToken);
+                    result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
                 }
 
                 var messageLogs = phoneNumbers.Select(s => new CustomerMessageLog()
@@ -86,7 +88,7 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
     }
     //******secrets storage
     //https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=linux
-    private async Task<bool> SendMessageAsync(string text, string phoneNumber, int id, CancellationToken cancellationToken)
+    private async Task<bool> SendMessageAsync(string text, string phoneNumber, int id, ILogger<SendMessageCommandHandler> logger, CancellationToken cancellationToken)
     {
         var sid = config["ConnectionStrings:Twilio:Sid"];
         var token = config["ConnectionStrings:Twilio:Token"];
@@ -103,25 +105,32 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
         {
             if (ex.Message == "Attempt to send to unsubscribed recipient")
             {
-                result = false;
-                var customerPhone = await context
-                    .FindAsync<CustomerPhoneNumber>(id, cancellationToken);
-                if (customerPhone == null)
-                {
-                    throw new KeyNotFoundException($"Invalid Id {id}");
-                }
-                customerPhone.DoNotCall = true;
-                await context.SaveChangesAsync(cancellationToken);
+                result = await MoveToDoNotCallAsync(id, cancellationToken);
 
             }
             else
             {
-                throw ex;
+                logger.LogError($"Error sending message {phoneNumber} {ex.Message}", ex);
+                result = await MoveToDoNotCallAsync(id, cancellationToken);
             }
 
         }
 
         return result;
 
+    }
+
+    private async Task<bool> MoveToDoNotCallAsync(int id, CancellationToken cancellationToken)
+    {
+        var result = false;
+        var customerPhone = await context
+            .FindAsync<CustomerPhoneNumber>(id, cancellationToken);
+        if (customerPhone == null)
+        {
+            throw new KeyNotFoundException($"Invalid Id {id}");
+        }
+        customerPhone.DoNotCall = true;
+        await context.SaveChangesAsync(cancellationToken);
+        return result;
     }
 }
