@@ -41,7 +41,8 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
 
             foreach (var cp in customerPhoneNumbers)
             {
-                result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
+                var resultSend = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
+                result = result && resultSend;
             }
 
             var messageLogs = request.phoneNumberIds.Select(s => new CustomerMessageLog()
@@ -62,7 +63,8 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
                 var phoneNumbers = await query.Skip(currentCount).Take(1000).ToArrayAsync(cancellationToken);
                 foreach (var cp in phoneNumbers)
                 {
-                    result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
+                    var msgSendingResult = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
+                    result = result && msgSendingResult;
                 }
 
                 var messageLogs = phoneNumbers.Select(s => new CustomerMessageLog()
@@ -98,8 +100,8 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
         var result = true;
         try
         {
-            await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
-                to: new PhoneNumber(phoneNumber));
+             await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
+                 to: new PhoneNumber(phoneNumber));
         }
         catch (Exception ex)
         {
