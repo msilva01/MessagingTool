@@ -1,4 +1,4 @@
-import { faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faMessage, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Container, Paper, TextField } from "@mui/material";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { PostAsync, PostFile } from "../../utils/apiDataWorker";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface MessageEditProps {
   ids?: GridRowId[];
@@ -27,10 +27,16 @@ interface SMSMessageData {
   sendToAll: boolean;
 }
 export function MessageEdit(props: MessageEditProps) {
+  const [isSending, setIsSending] = useState(false);
   const schema = yup.object({
     text: yup.string().required("Required Field"),
   });
 
+  useEffect(() => {
+    if (!props.show) {
+      setIsSending(false);
+    }
+  }, [props.show]);
   const {
     register,
     handleSubmit,
@@ -71,6 +77,7 @@ export function MessageEdit(props: MessageEditProps) {
     setValue("sendToAll", props.sendToAll);
   }, [props.sendToAll, props.language, props.ids]);
   async function onSubmit(data: SMSMessageData) {
+    setIsSending(true);
     mutate(data);
   }
   return (
@@ -119,9 +126,21 @@ export function MessageEdit(props: MessageEditProps) {
                   <p className="errorMessage">{errors?.text?.message}</p>
                 )}
               </Form.Group>
-              <Button variant="contained" color="primary" type="submit">
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                disabled={isSending}
+              >
                 <FontAwesomeIcon icon={faMessage}></FontAwesomeIcon>
-                &nbsp;Send Messages
+                &nbsp;Send Messages&nbsp;
+                {isSending && (
+                  <FontAwesomeIcon
+                    icon={faSpinner}
+                    size="lg"
+                    className="spinner"
+                  />
+                )}
               </Button>
             </form>
           </Paper>
