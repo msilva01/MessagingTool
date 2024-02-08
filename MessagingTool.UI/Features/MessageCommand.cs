@@ -41,7 +41,8 @@ public class SendMessageCommandHandler(IConfiguration config, MessagingToolDbCon
 
             foreach (var cp in customerPhoneNumbers)
             {
-                result = result && await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
+                var resultSend = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger, cancellationToken);
+                result = result && resultSend;
             }
 
             var messageLogs = request.phoneNumberIds.Select(s => new CustomerMessageLog()
