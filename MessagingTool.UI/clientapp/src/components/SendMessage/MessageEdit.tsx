@@ -10,6 +10,9 @@ import * as yup from "yup";
 import { PostAsync, PostFile } from "../../utils/apiDataWorker";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { processing } from "../../ReduxStore/MessageProgressSlice";
+import { finished } from "stream";
 
 export interface MessageEditProps {
   ids?: GridRowId[];
@@ -48,18 +51,17 @@ export function MessageEdit(props: MessageEditProps) {
     defaultValues: { text: "" },
   });
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
   const { mutate } = useMutation({
     mutationFn: async (data: SMSMessageData) =>
       await PostAsync("Home/Post", data),
     onSuccess: (res: any) => {
       queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
-      if (!res.data) {
-        toast.error(
-          "One or more phone numbers were moved to the Do Not Call List"
-        );
-      } else {
-        toast.success(`Messages Sent`);
-      }
+
+      dispatch(processing());
+      toast.warning(
+        `The messages were sent to the Queue. You will get a notification once they have been processed.`
+      );
       reset({ text: "" });
       props.onHide();
     },

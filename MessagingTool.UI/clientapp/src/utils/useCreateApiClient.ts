@@ -5,14 +5,14 @@ export interface AxiosRequestConfig {
 }
 
 export function useCreateApiClient(isFileUpload?: boolean) {
-  const baseUrl = `${process.env.REACT_APP_BASE_URL}`;
+  const baseUrl = `${process.env.REACT_APP_BASE_URL}api/`;
   //const contentType = isFileUpload ? "multipart/form-data" : "application/json";
   const axiosConfig = {
     baseURL: baseUrl,
     headers: {
       Accept: "*/*",
-    //  "Access-Control-Allow-Origin": "*",
-     // "Content-Type": contentType,
+      //  "Access-Control-Allow-Origin": "*",
+      // "Content-Type": contentType,
     },
   };
 

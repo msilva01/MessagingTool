@@ -11,6 +11,9 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { SignalR } from "./Services/SignalRContext";
+import { Provider } from "react-redux";
+import { store } from "./ReduxStore/Store";
 
 const root = createRoot(document.getElementById("root") as HTMLElement);
 const queryClient = new QueryClient({
@@ -33,7 +36,11 @@ root.render(
       <ToastContainer></ToastContainer>
       <QueryClientProvider client={queryClient}>
         <ReactQueryDevtools initialIsOpen={false} />
-        <App />
+        <Provider store={store}>
+          <SignalR>
+            <App />
+          </SignalR>
+        </Provider>
       </QueryClientProvider>
     </Router>
   </React.StrictMode>

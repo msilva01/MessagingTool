@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Button,
   Container,
   FormControl,
@@ -29,6 +30,8 @@ import "./PhoneUpload.css";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
 import { DeletePhone } from "./DeletePhone";
+import { useSelector } from "react-redux";
+import { MessageState } from "../../ReduxStore/Store";
 
 interface FileUploadData {
   language: string;
@@ -116,6 +119,9 @@ export function PhoneUpload() {
       clearErrors("language");
     }
   }, [doNotCallWatch]);
+  const { messageStatus } = useSelector(
+    (state: MessageState) => state.reducers.messageProgress
+  );
 
   return (
     <Container maxWidth="md" className=" p-3 mt-5">
@@ -227,7 +233,17 @@ export function PhoneUpload() {
               </aside>
             </Col>
           </Row>
-
+          <Row className="justify-content-md-center mb-2">
+            <Col xs={12}>
+              {(messageStatus === "processing" ||
+                messageStatus === "failed") && (
+                <Alert severity="error" variant="filled">
+                  Please wait. You cannot upload or delete data while processing
+                  the queue. {messageStatus}
+                </Alert>
+              )}
+            </Col>
+          </Row>
           <Row className="justify-content-md-end">
             <Col xs lg="auto">
               <Button
@@ -235,6 +251,7 @@ export function PhoneUpload() {
                 color="error"
                 type="button"
                 size="large"
+                disabled={messageStatus !== "idle"}
                 onClick={() => setShowModal(true)}
               >
                 <FontAwesomeIcon icon={faEraser}></FontAwesomeIcon>
@@ -247,7 +264,7 @@ export function PhoneUpload() {
                 color="primary"
                 type="submit"
                 size="large"
-                disabled={selectedFile == null}
+                disabled={selectedFile == null || messageStatus !== "idle"}
               >
                 <FontAwesomeIcon icon={faUpload}></FontAwesomeIcon>
                 &nbsp;Upload
