@@ -4,8 +4,11 @@ using MessagingTool.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using MessagingTool.UI;
+using MessagingTool.UI.Hubs;
 using NLog;
 using NLog.Web;
+using Hangfire;
+using Hangfire.MemoryStorage;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -13,22 +16,19 @@ try
 {
 
     var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: "AllowCORS",
-            policy => { policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
+            policy => { policy.SetIsOriginAllowed(x => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials(); });
     });
 
-// NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
     builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddSignalR();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddHangfire(x => x.UseMemoryStorage());
 
     builder.Services.AddElmah<SqlErrorLog>(options =>
     {
@@ -42,6 +42,7 @@ try
     });
     builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
     builder.Services.AddMemoryCache();
+    builder.Services.AddHangfireServer();
     builder.Services.AddAutoMapper(typeof(MessagingTool.UI.Program));
 
     var app = builder.Build();
@@ -52,19 +53,20 @@ try
     app.UseSwaggerUI();
     app.UseStaticFiles();
     app.UseRouting();
-
     app.UseCors(x => x
-        .AllowAnyOrigin()
         .AllowAnyMethod()
-        .AllowAnyHeader());
-
+        .AllowAnyHeader()
+        .SetIsOriginAllowed(origin => true) // allow any origin
+        .AllowCredentials()); // allow credentials
 
 //app.UseAuthentication();
     app.UseAuthorization();
 
     app.UseMiddleware<ErrorHandlerMiddleware>();
+    app.UseHangfireDashboard();
     app.MapControllers();
     app.UseElmah();
+    app.MapHub<JobProcessingHub>("/hub");
     app.Run();
 }
 catch (Exception ex)

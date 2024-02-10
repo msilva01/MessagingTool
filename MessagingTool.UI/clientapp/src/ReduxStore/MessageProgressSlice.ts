@@ -17,12 +17,13 @@ const MessageProgressSlice = createSlice({
     processing: (state) => {
       state.messageStatus = "processing";
     },
-    finished: (state, action: PayloadAction<string>) => {
+    finishedProcessingQueue: (state, action: PayloadAction<string>) => {
       state.messageStatus = "idle";
       state.value = action.payload;
     },
   },
 });
 
-export const { processing, finished } = MessageProgressSlice.actions;
+export const { processing, finishedProcessingQueue } =
+  MessageProgressSlice.actions;
 export default MessageProgressSlice.reducer;

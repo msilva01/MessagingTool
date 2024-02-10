@@ -1,6 +1,18 @@
-﻿namespace MessagingTool.UI.Hubs;
+﻿using Microsoft.AspNetCore.SignalR;
 
-public class JobProcessingHub
+namespace MessagingTool.UI.Hubs;
+
+
+public interface IJobProcessingHub
+{
+    [HubMethodName("finishedSending")]
+    Task FinishedSending(bool result, int numberOfTextsSent);
+    [HubMethodName("errorSending")]
+    Task ErrorSending(string errorMessage);
+}
+
+
+public class JobProcessingHub : Hub<IJobProcessingHub>
 {
     
 }

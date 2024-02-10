@@ -1,15 +1,8 @@
-import React from "react";
 import "./App.css";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Container from "react-bootstrap/Container";
-import {
-  faBan,
-  faEnvelope,
-  faSearch,
-  faSms,
-  faUpload,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBan, faSms, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { NavLink } from "react-router-dom";
 import { Badge } from "react-bootstrap";
@@ -19,6 +12,12 @@ import { SendMessage } from "./components/SendMessage/SendMessage";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { DotLoaderOverlay } from "react-spinner-overlay";
 import { ThemeProvider, createTheme } from "@mui/material";
+import { SignalRContext } from "./Services/SignalRContext";
+import { JobProcessingCallbacksNames } from "./Services/Hub";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { finishedProcessingQueue } from "./ReduxStore/MessageProgressSlice";
+
 export const MessagingTheme = createTheme({
   palette: {
     secondary: {
@@ -46,6 +45,31 @@ export const MessagingTheme = createTheme({
 function App() {
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();
+  const dispatch = useDispatch();
+  SignalRContext.useSignalREffect(
+    JobProcessingCallbacksNames.finishedSendingTexts,
+    (msg, count) => {
+      const result = `Finished Sending Texts to ${count} Phone Numbers`;
+      if (msg) {
+        toast.success(result);
+      } else {
+        toast.warning(
+          `Finished Sending Texts to ${count}. Some Messages were in Twilio black list and moved to Do NOT CALL`
+        );
+      }
+      dispatch(finishedProcessingQueue(result));
+    },
+    []
+  );
+
+  SignalRContext.useSignalREffect(
+    JobProcessingCallbacksNames.errorSendingTexts,
+    (msg) => {
+      toast.error(`An Error occured sending messages to Twilio ${msg}`);
+    },
+    []
+  );
+
   return (
     <>
       <ThemeProvider theme={MessagingTheme}>
@@ -54,6 +78,7 @@ function App() {
           color="rgba(68,68,68,1)"
           overlayColor="rgba(68,68,68,0.2)"
         />
+
         <Navbar expand="lg" className="navBarHeader" variant="dark">
           <Container fluid>
             <Navbar.Brand>
@@ -118,6 +143,7 @@ function App() {
             </div>
           </Container>
         </Navbar>
+
         <Routes>
           <Route path="/" element={<PhoneUpload></PhoneUpload>}></Route>
           <Route
