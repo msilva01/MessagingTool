@@ -40,6 +40,11 @@ public class SendMessageCommandHandler(
         var messagesSentCount = 0;
         try
         {
+            var sid = config["ConnectionStrings:Twilio:Sid"];
+            var token = config["ConnectionStrings:Twilio:Token"];
+            var ameritaxPhoneNumber = config["ConnectionStrings:Twilio:PhoneNumber"];
+
+            TwilioClient.Init(sid, token);
 
 
             if (!request.SendToAll)
@@ -58,7 +63,7 @@ public class SendMessageCommandHandler(
 
                 foreach (var cp in customerPhoneNumbers)
                 {
-                    var resultSend = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger);
+                    var resultSend = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, ameritaxPhoneNumber, logger);
                     result = result && resultSend;
                     messagesSentCount++;
                 }
@@ -81,7 +86,7 @@ public class SendMessageCommandHandler(
                     var phoneNumbers = await query.Skip(currentCount).Take(1000).ToArrayAsync();
                     foreach (var cp in phoneNumbers)
                     {
-                        var msgSendingResult = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, logger);
+                        var msgSendingResult = await SendMessageAsync(request.text, cp.PhoneNumber, cp.Id, ameritaxPhoneNumber, logger);
                         result = result && msgSendingResult;
                         messagesSentCount++;
                     }
@@ -114,13 +119,8 @@ public class SendMessageCommandHandler(
     }
     //******secrets storage
     //https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=linux
-    private async Task<bool> SendMessageAsync(string text, string phoneNumber, int id, ILogger<SendMessageCommandHandler> logger)
+    private async Task<bool> SendMessageAsync(string text, string phoneNumber, int id, string ameritaxPhoneNumber, ILogger<SendMessageCommandHandler> logger)
     {
-        var sid = config["ConnectionStrings:Twilio:Sid"];
-        var token = config["ConnectionStrings:Twilio:Token"];
-        var ameritaxPhoneNumber = config["ConnectionStrings:Twilio:PhoneNumber"];
-
-        TwilioClient.Init(sid, token);
         var result = true;
         try
         {
