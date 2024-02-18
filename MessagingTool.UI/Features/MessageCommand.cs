@@ -124,7 +124,7 @@ public class SendMessageCommandHandler(
         var result = true;
         try
         {
-            Thread.Sleep(100); //give twilio  a little time between requests
+            Thread.Sleep(500); //give twilio  a little time between requests
             await MessageResource.CreateAsync(body: text, from: new PhoneNumber(ameritaxPhoneNumber),
                 to: new PhoneNumber(phoneNumber));
         }
