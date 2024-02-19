@@ -8,7 +8,6 @@ export const SignalRContext = createSignalRContext<JobProcessingProcess>({
 
 export const SignalR = ({ children }: PropsWithChildren) => {
   const baseUrl = `${process.env.REACT_APP_BASE_URL}`;
-  console.log(baseUrl);
   return (
     <SignalRContext.Provider
       url={`${baseUrl}hub`}

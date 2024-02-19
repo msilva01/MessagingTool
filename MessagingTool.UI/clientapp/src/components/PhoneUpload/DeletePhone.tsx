@@ -25,7 +25,7 @@ export interface DeletePhoneProps {
   onHide?: any;
 }
 
-export function DeletePhone(props: DeletePhoneProps) {
+export function DeletePhone({ show = false, onHide = null }: DeletePhoneProps) {
   const queryClient = useQueryClient();
   const [englishUpload, setEnglishUpload] = useState(false);
   const [spanishUpload, setSpanishUpload] = useState(false);
@@ -38,7 +38,7 @@ export function DeletePhone(props: DeletePhoneProps) {
       ),
     onSuccess: () => {
       queryClient.resetQueries({ queryKey: ["PhoneNumberGrid"], exact: false });
-      props.onHide();
+      onHide();
       toast.success("All data successfuly deleted");
     },
     onError: (err: any) => {
@@ -50,10 +50,10 @@ export function DeletePhone(props: DeletePhoneProps) {
   return (
     <Container>
       <Modal
-        show={props.show}
+        show={show}
         aria-labelledby="contained-modal-title-vcenter"
         centered
-        onHide={props.onHide}
+        onHide={onHide}
       >
         <Modal.Header closeButton className={`modal-header delete`}>
           <Modal.Title id="contained-modal-title-vcenter">

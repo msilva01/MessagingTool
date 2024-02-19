@@ -75,7 +75,7 @@ interface DoNotCallCommand {
   doNotCall: boolean;
 }
 
-export function SendMessage(props: ISendMessageProps) {
+export function SendMessage({ doNotCall = false }: ISendMessageProps) {
   const [filterValue, setFilterValue] = useState("");
   const [sendToAll, setSendToAll] = useState(false);
   const [showModal, setShowModal] = useState<messageModalType>({ id: "none" });
@@ -120,13 +120,13 @@ export function SendMessage(props: ISendMessageProps) {
       searchData.pageNumber,
       searchData.rowsPerPage,
       language,
-      props.doNotCall,
+      doNotCall,
       searchData.field,
       searchData.value,
     ],
     queryFn: async () =>
       await GetAsync<PhoneNumberWrapper>(
-        `/Home/Get?rowsPerPage=${searchData.rowsPerPage}&pageNumber=${searchData.pageNumber}&language=${language}&doNotCall=${props.doNotCall}&field=${searchData.field}&value=${searchData.value}`
+        `/Home/Get?rowsPerPage=${searchData.rowsPerPage}&pageNumber=${searchData.pageNumber}&language=${language}&doNotCall=${doNotCall}&field=${searchData.field}&value=${searchData.value}`
       ).then((res) => res.data),
   });
 
@@ -163,7 +163,7 @@ export function SendMessage(props: ISendMessageProps) {
       <GridToolbarContainer>
         <div style={{ width: "100%" }}>
           <div className="float-start">
-            {props.doNotCall && (
+            {doNotCall && (
               <div className="float-start mb-3 mt-2">
                 <Button
                   variant="contained"
@@ -178,7 +178,7 @@ export function SendMessage(props: ISendMessageProps) {
                 </Button>
               </div>
             )}
-            {!props.doNotCall && (
+            {!doNotCall && (
               <div className="float-start mb-3 mt-2">
                 <Button
                   variant="contained"
@@ -247,14 +247,14 @@ export function SendMessage(props: ISendMessageProps) {
           show={showModal.id === "donotcall"}
           headerTitle="Do Not Call"
           bodyMessage={
-            props.doNotCall
+            doNotCall
               ? "Are you sure you want to set the assigned numbers as ABLE TO RECEIVE A MESSAGE? Click Yes to confirm or No to cancel."
               : "Are you sure you want to set the selected numbers as DO NOT CALL ? Click Yes to confirm or No to cancel."
           }
           onHide={() => setShowModal({ id: "none" })}
           updateData={() => {
             mutate({
-              doNotCall: !props.doNotCall,
+              doNotCall: !doNotCall,
               phoneNumberIds: selectedIds.map((x) => x.toString()),
             });
           }}
@@ -268,9 +268,9 @@ export function SendMessage(props: ISendMessageProps) {
           <div>
             <Stack direction="row">
               <h2 className="me-4">
-                {props.doNotCall ? "Do Not Call List" : "Send Text "}
+                {doNotCall ? "Do Not Call List" : "Send Text "}
               </h2>
-              {!props.doNotCall && (
+              {!doNotCall && (
                 <FormControl style={{ width: 200 }} className="ms-4">
                   <InputLabel id="demo-simple-select-label">
                     language
